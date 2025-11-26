@@ -1,8 +1,16 @@
+import express from "express";
 import { Client, GatewayIntentBits, Collection } from "discord.js";
 import "dotenv/config";
-import interactionHandler from "./interactionHandler.js";
+import interactionHandler from "./interactionHandler.js"; // Make sure this is default export
 
-// Create the client
+// --- Express server for Render ---
+const app = express();
+app.get("/", (req, res) => res.send("Bot is running!"));
+app.listen(process.env.PORT || 3000, () =>
+  console.log("Listening for Render keep-alive")
+);
+
+// --- Discord Bot ---
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
@@ -13,21 +21,10 @@ client.commands = new Collection();
 // Load interaction handler
 interactionHandler(client);
 
-// When bot is online
+// Bot online
 client.once("ready", () => {
   console.log(`Bot is online as ${client.user.tag}`);
 });
 
-// Login using token from environment variable
+// Login
 client.login(process.env.TOKEN);
-
-import express from "express";
-const app = express();
-
-app.get("/", (req, res) => {
-  res.send("Bot is running!");
-});
-
-app.listen(process.env.PORT || 3000, () =>
-  console.log("Listening for Render keep-alive")
-);
