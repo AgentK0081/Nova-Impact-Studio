@@ -19,4 +19,4 @@ client.once("ready", () => {
 });
 
 // Login using token from environment variable
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.TOKEN);
