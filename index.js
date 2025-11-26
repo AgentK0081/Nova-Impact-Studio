@@ -1,36 +1,22 @@
 import { Client, GatewayIntentBits, Collection } from "discord.js";
-import express from "express";
-import { glob } from "glob";
-import path from "path";
-import { handleInteraction } from "./interactionHandler.js";
+import "dotenv/config";
+import interactionHandler from "./interactionHandler.js";
 
-// --- Keep Render alive ---
-const app = express();
-app.get("/", (_, res) => res.send("Bot is online!"));
-app.listen(process.env.PORT || 3000);
-
-// --- Discord setup ---
+// Create the client
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+  intents: [GatewayIntentBits.Guilds],
 });
 
+// Collection for slash commands
 client.commands = new Collection();
 
-// --- Load commands ---
-const files = await glob("commands/*.js");
-for (const file of files) {
-  const command = (await import(path.resolve(file))).default;
-  client.commands.set(command.data.name, command);
-}
+// Load interaction handler
+interactionHandler(client);
 
-// --- Slash command handler ---
-client.on("interactionCreate", (interaction) =>
-  handleInteraction(interaction, client)
-);
+// When bot is online
+client.once("ready", () => {
+  console.log(`Bot is online as ${client.user.tag}`);
+});
 
-// --- Bot login ---
-client.login(process.env.DISCORD_TOKEN);
+// Login using token from environment variable
+client.login(process.env.TOKEN);
