@@ -1,9 +1,14 @@
+// deploy-commands.js
 import { REST, Routes } from "discord.js";
-import ping from "./commands/ping.js";
+import { readdirSync } from "fs";
 
-const commands = [
-  ping.data.toJSON()
-];
+const commands = [];
+
+const commandFiles = readdirSync("./commands").filter(file => file.endsWith(".js"));
+for (const file of commandFiles) {
+  const { default: command } = await import(`./commands/${file}`);
+  commands.push(command.data.toJSON());
+}
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
