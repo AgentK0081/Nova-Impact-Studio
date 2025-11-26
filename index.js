@@ -1,12 +1,15 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, Collection } from "discord.js";
 import express from "express";
+import { glob } from "glob";
+import path from "path";
+import { handleInteraction } from "./interactionHandler.js";
 
-// --- Keep Render service alive ---
+// --- Keep Render alive ---
 const app = express();
 app.get("/", (_, res) => res.send("Bot is online!"));
 app.listen(process.env.PORT || 3000);
 
-// --- Discord Bot Setup ---
+// --- Discord setup ---
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -15,15 +18,19 @@ const client = new Client({
   ]
 });
 
-// --- Basic Command ---
-client.on("messageCreate", msg => {
-  if (msg.author.bot) return;
+client.commands = new Collection();
 
-  if (msg.content === "!ping") {
-    msg.reply("Pong! 🏓");
-  }
-});
+// --- Load commands ---
+const files = await glob("commands/*.js");
+for (const file of files) {
+  const command = (await import(path.resolve(file))).default;
+  client.commands.set(command.data.name, command);
+}
 
-// --- Login ---
-client.login(process.env.DISCORD_TOKEN)
-  .catch(err => console.error("Invalid Discord token!", err));
+// --- Slash command handler ---
+client.on("interactionCreate", (interaction) =>
+  handleInteraction(interaction, client)
+);
+
+// --- Bot login ---
+client.login(process.env.DISCORD_TOKEN);
