@@ -20,3 +20,14 @@ client.once("ready", () => {
 
 // Login using token from environment variable
 client.login(process.env.TOKEN);
+
+import express from "express";
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Bot is running!");
+});
+
+app.listen(process.env.PORT || 3000, () =>
+  console.log("Listening for Render keep-alive")
+);
