@@ -1,15 +1,18 @@
-export async function handleInteraction(interaction, client) {
-  if (!interaction.isChatInputCommand()) return;
+export default function interactionHandler(client) {
+  client.on("interactionCreate", async interaction => {
+    if (!interaction.isChatInputCommand()) return;
 
-  const command = client.commands.get(interaction.commandName);
-  if (!command) {
-    return interaction.reply("Unknown command.");
-  }
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
 
-  try {
-    await command.execute(interaction);
-  } catch (err) {
-    console.error(err);
-    await interaction.reply("Error executing command.");
-  }
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content: "There was an error running this command!",
+        ephemeral: true
+      });
+    }
+  });
 }
